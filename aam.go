@@ -24,6 +24,10 @@ func (actor *Actor) Signal(error error) {
   actor.effect.errorsMutex.Unlock()
 }
 
+func (actor *Actor) String() string {
+  return actor.reference.String()
+}
+
 type ActorReference struct {
   id int
   configuration *configuration
@@ -66,6 +70,10 @@ func (actorReference *ActorReference) Signal(error error) {
   actor.effect.errorsMutex.Unlock()
 }
 
+func (actorReference *ActorReference) String() string {
+  return "{actor: " + strconv.Itoa(actorReference.id) + "}"
+}
+
 type Behavior func(event Event)
 
 type Effect struct {
@@ -89,6 +97,11 @@ func (event *Event) Self() ActorReference {
   return event.configuration.idToActorMap[event.target.id].reference
 }
 
+func (event *Event) String() string {
+  return "{event: " + event.id.String() + ", target: " + event.target.String() +
+    ", message: " + event.Message.String() + "}"
+}
+
 type EventReference int
 
 func (eventReference EventReference) String() string {
@@ -96,6 +109,15 @@ func (eventReference EventReference) String() string {
 }
 
 type Message []interface{}
+
+func (message Message) String() string {
+  stringRepresentation := "[ "
+  for _, arg := range message {
+    stringRepresentation += fmt.Sprint(arg) + " "
+  }
+  stringRepresentation += "]"
+  return stringRepresentation
+}
 
 func New() configuration {
   return configuration{
@@ -131,7 +153,7 @@ func (configuration *configuration) Create(behavior Behavior) ActorReference {
   configuration.idToActorMapMutex.Unlock()
 
   if configuration.Trace {
-    fmt.Println("[trace] CREATED    ", actor)
+    fmt.Println("[trace] CREATED    ", actor.String())
   }
 
   return actor.reference
@@ -159,7 +181,7 @@ func (configuration *configuration) Dispatch() {
     actor.effectSetMutex.Unlock()
 
     if configuration.Trace {
-      fmt.Println("[trace] DISPATCHING", event)
+      fmt.Println("[trace] DISPATCHING", event.String())
     }
 
     actor.behavior(event)
@@ -187,7 +209,7 @@ func (configuration *configuration) Dispatch() {
   }
 
   if configuration.Trace {
-    fmt.Println("[trace] DISPATCHED ", event)
+    fmt.Println("[trace] DISPATCHED ", event.String())
   }
 }
 
