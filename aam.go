@@ -12,7 +12,6 @@ type Actor struct {
   behaviorSet bool
   configuration *configuration
   effect Effect
-  effectSet bool
 }
 
 func (actor *Actor) Signal(error error) {
@@ -136,9 +135,8 @@ func (configuration *configuration) Dispatch() {
   event := configuration.events[0]
   configuration.events = configuration.events[1:]
   actor := configuration.idToActorMap[event.target.id]
-  if actor.effectSet == false {
+  if actor.effect.behavior == nil {
     actor.effect = Effect{behavior: actor.behavior}
-    actor.effectSet = true
 
     if configuration.Trace {
       fmt.Println("[trace] DISPATCHING", event.String())
